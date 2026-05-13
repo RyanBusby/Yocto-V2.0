@@ -2,17 +2,22 @@
 //                  Yocto v2.x
 //                  main program
 //-------------------------------------------------
+// Macro Definition
+#include <MIDI.h>
+MIDI_CREATE_DEFAULT_INSTANCE();
 
+#include <arduino.h>
+typedef char prog_char; 
+using namespace midi;
 /////////////////////Include/////////////////////
 #include <SPI.h>
 #include <LiquidCrystal.h>
-#include <WireN.h>
+#include "WireN.h"
 #include "define.h"
 #include "string.h"
-#include <MIDI.h>
 #include <EEPROM.h>
 
-#include <MemoryFree.h>
+#include "MemoryFree.h"
 
 LiquidCrystal lcd(18, 19, 20, 21, 22, 23);
 
@@ -127,39 +132,3 @@ void loop()
   LcdUpdate();
   SetTrigTime();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

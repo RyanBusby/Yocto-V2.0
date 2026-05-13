@@ -2,7 +2,12 @@
 //                  Yocto v2.x
 //                    define
 //-------------------------------------------------
+#include <MIDI.h>
 
+// This allows other files to "see" the MIDI object
+extern midi::MidiInterface<midi::SerialMIDI<HardwareSerial>> MIDI; 
+
+using namespace midi;
 #ifndef define_h
 #define define_h
 
@@ -478,5 +483,3 @@ boolean userInterfaceTestMode = LOW;
 boolean voicesTestMode = LOW;
 
 #endif//end if define_h
-
-
