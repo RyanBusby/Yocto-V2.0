@@ -762,15 +762,23 @@ void SeqParameter()
     //Serial.println("Ready!!");
     //if ((isRunning && endMeasure) || !isRunning ){//|| (curSeqMode != PTRN_PLAY))
     // Serial.println("endMeasure!!");
-    nextPatternReady = FALSE;
-    keybOct = DEFAULT_OCT;
-    noteIndex = 0;
-    InitMidiNoteOff();
-    ptrnBuffer = !ptrnBuffer;
-    //Serial.println("switched!!");
-    InitPattern();//SHOULD BE REMOVED WHEN EEPROM WILL BE INITIALIZED
-    //SetHHPattern();
-    InstToStepWord();
+    if (seq.sync == SLAVE && isRunning && curSeqMode == PTRN_PLAY && !endMeasure) {
+      // Wait for the measure boundary; CountPPQN() will commit the swap.
+    }
+    else {
+      nextPatternReady = FALSE;
+      keybOct = DEFAULT_OCT;
+      noteIndex = 0;
+      InitMidiNoteOff();
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        ptrnBuffer = !ptrnBuffer;
+        ResetPatternTiming();
+        //Serial.println("switched!!");
+        InitPattern();//SHOULD BE REMOVED WHEN EEPROM WILL BE INITIALIZED
+        //SetHHPattern();
+        InstToStepWord();
+      }
+    }
   }
 
   if (patternWasEdited)

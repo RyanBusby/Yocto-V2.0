@@ -152,14 +152,13 @@ void CountPPQN()
         keybOct = DEFAULT_OCT;
         noteIndex = 0;
         InitMidiNoteOff();
-        //When pattern changed init all instrument step counter
-        for (byte z = 0; z < NBR_INST; z++){
-          stepCount[z] = 0;
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+          ResetPatternTiming();
+          ptrnBuffer = !ptrnBuffer;
+          InitPattern();//SHOULD BE REMOVED WHEN EEPROM WILL BE INITIALIZED
+          //SetHHPattern();
+          InstToStepWord();
         }
-        ptrnBuffer = !ptrnBuffer;
-        InitPattern();//SHOULD BE REMOVED WHEN EEPROM WILL BE INITIALIZED
-        //SetHHPattern();
-        InstToStepWord();
       }
     }
     if (ppqn % pattern[ptrnBuffer].globalScale == 4 && globalStepCount == 0){ 

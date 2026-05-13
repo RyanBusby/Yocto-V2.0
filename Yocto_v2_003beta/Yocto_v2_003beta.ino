@@ -13,6 +13,7 @@
 #include <EEPROM.h>
 
 #include <MemoryFree.h>
+#include <util/atomic.h>
 
 LiquidCrystal lcd(18, 19, 20, 21, 22, 23);
 

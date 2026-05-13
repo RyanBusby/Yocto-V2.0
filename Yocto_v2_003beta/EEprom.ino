@@ -35,6 +35,8 @@
 //
 //-------------------------------------------------
 
+#include <util/atomic.h>
+
 #define PTRN_SIZE          (PTRN_TRIG_SIZE + PTRN_SETUP_SIZE + PTRN_VEL_SIZE + PTRN_PROB_SIZE + PTRN_uTIMING_SIZE + PTRN_RETRIG_SIZE + PTRN_EXT_SIZE) //1280 bytes
 #define PTRN_OFFSET        (unsigned long)(0)
 #define PTRN_TRIG_SIZE     (unsigned long)(96)
@@ -178,44 +180,45 @@ void SavePattern(byte patternNbr)
 //Load Pattern
 void LoadPattern(byte patternNbr)
 {
-  unsigned long adress = (unsigned long)(PTRN_OFFSET + patternNbr * PTRN_SIZE);
-  WireBeginTX(adress); 
-  Wire.endTransmission();
-  byte hrdwAddress = HRDW_ADDRESS + (adress >> 16);
-  Wire.requestFrom(hrdwAddress ,MAX_PAGE_SIZE); //request a 128 bytes page
-  //TRIG-----------------------------------------------
-  for(int i =0; i<NBR_INST;i++){
-    pattern[!ptrnBuffer].inst[i] = (unsigned long)((Wire.read() & 0xFF) | (( Wire.read() << 8) & 0xFF00));
-    pattern[!ptrnBuffer].length[i]  = Wire.read();
-    pattern[!ptrnBuffer].scale[i]  = Wire.read();
-    pattern[!ptrnBuffer].shuffle[i]  = Wire.read();
-    pattern[!ptrnBuffer].dir[i]  = Wire.read();
-  }
-  //96 bytes requested
-  //SETUP-----------------------------------------------
-  pattern[!ptrnBuffer].globalLength = Wire.read();
-  pattern[!ptrnBuffer].globalScale = Wire.read();
-  pattern[!ptrnBuffer].globalShuffle = Wire.read();
-  pattern[!ptrnBuffer].globalDir = Wire.read();
-  pattern[!ptrnBuffer].groupPos = Wire.read();
-  pattern[!ptrnBuffer].groupLength = Wire.read();
-  pattern[!ptrnBuffer].totalAcc = Wire.read();
-  //103 bytes requested
-
-    //VELOCITY-----------------------------------------------
-  for(int nbrPage = 0; nbrPage < 2; nbrPage++){
-    adress = (unsigned long)(PTRN_OFFSET + (patternNbr * PTRN_SIZE) + (MAX_PAGE_SIZE * nbrPage) + PTRN_SETUP_OFFSET);
-    //Serial.println(adress);
-    WireBeginTX(adress);
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    unsigned long adress = (unsigned long)(PTRN_OFFSET + patternNbr * PTRN_SIZE);
+    WireBeginTX(adress); 
     Wire.endTransmission();
-    hrdwAddress = HRDW_ADDRESS + (adress >> 16);
-    Wire.requestFrom(hrdwAddress,MAX_PAGE_SIZE); //request of  128 bytes
-    for (byte i = 0; i < 8; i++){//loop as many instrument for a page
-      for (byte j = 0; j < NBR_STEP; j++){
-        pattern[!ptrnBuffer].velocity[i + (nbrPage * 8)][j] = (Wire.read() & 0xFF);
+    byte hrdwAddress = HRDW_ADDRESS + (adress >> 16);
+    Wire.requestFrom(hrdwAddress ,MAX_PAGE_SIZE); //request a 128 bytes page
+    //TRIG-----------------------------------------------
+    for(int i =0; i<NBR_INST;i++){
+      pattern[!ptrnBuffer].inst[i] = (unsigned long)((Wire.read() & 0xFF) | (( Wire.read() << 8) & 0xFF00));
+      pattern[!ptrnBuffer].length[i]  = Wire.read();
+      pattern[!ptrnBuffer].scale[i]  = Wire.read();
+      pattern[!ptrnBuffer].shuffle[i]  = Wire.read();
+      pattern[!ptrnBuffer].dir[i]  = Wire.read();
+    }
+    //96 bytes requested
+    //SETUP-----------------------------------------------
+    pattern[!ptrnBuffer].globalLength = Wire.read();
+    pattern[!ptrnBuffer].globalScale = Wire.read();
+    pattern[!ptrnBuffer].globalShuffle = Wire.read();
+    pattern[!ptrnBuffer].globalDir = Wire.read();
+    pattern[!ptrnBuffer].groupPos = Wire.read();
+    pattern[!ptrnBuffer].groupLength = Wire.read();
+    pattern[!ptrnBuffer].totalAcc = Wire.read();
+    //103 bytes requested
+
+      //VELOCITY-----------------------------------------------
+    for(int nbrPage = 0; nbrPage < 2; nbrPage++){
+      adress = (unsigned long)(PTRN_OFFSET + (patternNbr * PTRN_SIZE) + (MAX_PAGE_SIZE * nbrPage) + PTRN_SETUP_OFFSET);
+      //Serial.println(adress);
+      WireBeginTX(adress);
+      Wire.endTransmission();
+      hrdwAddress = HRDW_ADDRESS + (adress >> 16);
+      Wire.requestFrom(hrdwAddress,MAX_PAGE_SIZE); //request of  128 bytes
+      for (byte i = 0; i < 8; i++){//loop as many instrument for a page
+        for (byte j = 0; j < NBR_STEP; j++){
+          pattern[!ptrnBuffer].velocity[i + (nbrPage * 8)][j] = (Wire.read() & 0xFF);
+        }
       }
     }
-  }
 
   //======================================NOT USED YET=============================================
   /*

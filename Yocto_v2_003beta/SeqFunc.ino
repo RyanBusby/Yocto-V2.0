@@ -92,6 +92,17 @@ void PasteBufferToPattern(byte patternNum)
   }
 }
 
+void ResetPatternTiming()
+{
+  globalStepCount = 0;
+  tapStepCount = 0;
+  for (byte z = 0; z < NBR_INST; z++){
+    stepCount[z] = 0;
+    stepChanged[z] = FALSE;
+    shufPolarity[z] = 0;
+  }
+}
+
 //init pattern
 void InitPattern()
 {

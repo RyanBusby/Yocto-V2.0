@@ -3,20 +3,26 @@
 //             Timer Configuration
 //-------------------------------------------------
 
+#include <util/atomic.h>
+
 void TimerStart()
 {
-  TCCR1A = TCCR1B = 0;
-  //prescale 8 => 16000000/8 = 2000000 Hz by tick
-  TCCR1B |= _BV (CS11) | _BV (WGM12);
-  TimerSetFrequency();
-  TIMSK1 |= _BV(OCIE1A);
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    TCCR1A = TCCR1B = 0;
+    //prescale 8 => 16000000/8 = 2000000 Hz by tick
+    TCCR1B |= _BV (CS11) | _BV (WGM12);
+    TimerSetFrequency();
+    TIMSK1 |= _BV(OCIE1A);
+  }
 
 }
 
 void TimerStop(void)
 {
-  bitWrite(TIMSK1, OCIE1A, 0);
-  TCCR1A = TCCR1B = OCR1A = 0;
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    bitWrite(TIMSK1, OCIE1A, 0);
+    TCCR1A = TCCR1B = OCR1A = 0;
+  }
 }
 
 void TimerSetFrequency()
